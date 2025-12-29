@@ -35,6 +35,7 @@ class EventType(str, Enum):
     # Inventory events
     INVENTORY_RESERVED = "inventory.reserved"
     INVENTORY_RELEASED = "inventory.released"
+    INVENTORY_INSUFFICIENT = "inventory.insufficient"
 
     # Payment events
     PAYMENT_PROCESSED = "payment.processed"

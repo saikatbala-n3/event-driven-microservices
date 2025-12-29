@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class EventPublisher:
     """Publishing events to RabbitMQ."""
 
-    def __init__(self, exchange_name: str = "microservices.events"):
+    def __init__(self, exchange_name: str = "microservice.events"):
         self.exchange_name = exchange_name
         self.connection: Optional[AbstractRobustConnection] = None
         self.channel: Optional[AbstractRobustChannel] = None

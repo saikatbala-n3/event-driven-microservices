@@ -10,7 +10,6 @@ class InventoryReservedEvent(BaseEvent):
 
     event_type: EventType = EventType.INVENTORY_RESERVED
     order_id: str
-    reservation_id: str
     items: List[InventoryItem]
 
 
@@ -19,13 +18,12 @@ class InventoryReleasedEvent(BaseEvent):
 
     event_type: EventType = EventType.INVENTORY_RELEASED
     order_id: str
-    reservation_id: str
     reason: str
 
 
-# class InventoryInsufficientEvent(BaseEvent):
-#     """Published when inventory cannot be reserved."""
+class InventoryInsufficientEvent(BaseEvent):
+    """Published when inventory cannot be reserved."""
 
-#     event_type: EventType = EventType.INVENTORY_INSUFFICIENT
-#     order_id: str
-#     unavailable_items: List[InventoryItem]
+    event_type: EventType = EventType.INVENTORY_INSUFFICIENT
+    order_id: str
+    unavailable_items: List[InventoryItem]
