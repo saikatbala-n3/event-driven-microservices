@@ -11,6 +11,7 @@ class InventoryReservedEvent(BaseEvent):
     event_type: EventType = EventType.INVENTORY_RESERVED
     order_id: str
     items: List[InventoryItem]
+    total_amount: float
 
 
 class InventoryReleasedEvent(BaseEvent):
