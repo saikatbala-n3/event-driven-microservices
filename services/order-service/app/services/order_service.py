@@ -12,10 +12,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../.."))
 from shared.events import OrderCreatedEvent, OrderConfirmedEvent, OrderCancelledEvent
 from shared.models.items import OrderItem as SharedOrderItem
 from shared.models.enums import OrderStatus
+from shared.messaging.publisher import EventPublisher
 
 from app.models.order import Order, OrderItem
 from app.schemas.order import OrderCreate
-from app.events.publisher import event_publisher
+
+event_publisher = EventPublisher()
 
 
 class OrderService:
@@ -99,6 +101,26 @@ class OrderService:
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
+    async def update_to_processing(self, order_id: str) -> Order | None:
+        """Update order status to PROCESSING when inventory is reserved."""
+        order = await self.get_order(order_id)
+
+        if not order:
+            print(f"[Order Service] Order {order_id} not found")
+            return None
+
+        if order.status != OrderStatus.PENDING:
+            print(f"[Order Service] Order {order_id} already in status {order.status}")
+            return order
+
+        order.status = OrderStatus.PROCESSING
+        order.updated_at = datetime.now(timezone.utc)
+        await self.db.commit()
+        await self.db.refresh(order, ["items"])
+
+        print(f"[Order Service] Order {order_id} status updated to PROCESSING")
+        return order
+
     async def confirm_order(self, order_id: str):
         """Confirm an order."""
 
@@ -121,7 +143,7 @@ class OrderService:
         await event_publisher.publish_event(event)
         return order
 
-    async def cancel_order(self, order_id: str, reason: str):
+    async def cancel_order(self, order_id: str, reason: str, correlation_id: str):
         """Cancel an order."""
 
         order = await self.get_order(order_id)
@@ -129,7 +151,7 @@ class OrderService:
             raise ValueError(f"Order {order_id} not found")
 
         order.status = OrderStatus.CANCELLED
-        order.confirmed_at = datetime.now(timezone.utc)
+        order.cancelled_at = datetime.now(timezone.utc)
         order.updated_at = datetime.now(timezone.utc)
 
         await self.db.commit()
@@ -140,7 +162,7 @@ class OrderService:
             order_id=order_id,
             user_id=order.user_id,
             reason=reason,
-            correlation_id=order.id,
+            correlation_id=correlation_id or order.id,
         )
 
         await event_publisher.publish_event(event)

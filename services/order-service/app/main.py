@@ -8,7 +8,8 @@ from prometheus_client import make_asgi_app
 from app.config import settings
 from app.db.session import init_db, engine
 from app.api import orders_router
-from app.events import event_publisher, start_consumers
+from app.events import start_consumers
+from app.services.order_service import event_publisher
 
 # Configure logging
 logging.basicConfig(
